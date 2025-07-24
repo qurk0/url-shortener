@@ -1,6 +1,7 @@
 env: "local"
 "db_config":
-  address: "localhost:5432"
+  host: "localhost"
+  port: "5432"
   username: "admin"
   password: "admin"
   db_name: "taskService"

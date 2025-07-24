@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"taskService/internal/config"
+	"taskService/internal/lib/log/sl"
+	"taskService/internal/storage/pgsql"
 )
 
 const (
@@ -22,7 +25,11 @@ func main() {
 	log.Info("Starting task service...", slog.String("env", cfg.Env))
 	log.Debug("Debug messages are enabled")
 
-	// TODO: Инициализация хранилища
+	storage, err := pgsql.New(context.Background(), cfg.DbCfg)
+	if err != nil {
+		log.Error("failed to create storage", sl.Err(err))
+		os.Exit(1)
+	}
 
 	// TODO: Инициализация роутера
 
