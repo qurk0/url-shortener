@@ -1,0 +1,3 @@
+package errs
+
+func BadRequestError()

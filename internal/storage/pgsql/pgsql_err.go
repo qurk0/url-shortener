@@ -11,7 +11,7 @@ import (
 func errMapping(err error) error {
 	if errors.Is(err, pgx.ErrNoRows) {
 		return &errs.DbError{
-			Code:    errs.CodeNotFound,
+			Code:    errs.CodeDbNotFound,
 			Message: "zero rows found",
 		}
 	}
@@ -20,14 +20,14 @@ func errMapping(err error) error {
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == "23505" {
 			return &errs.DbError{
-				Code:    errs.ErrDuplicateAlias,
+				Code:    errs.CodeDbDuplicateAlias,
 				Message: "alias already exist",
 			}
 		}
 	}
 
 	return &errs.DbError{
-		Code:    errs.ErrInternal,
+		Code:    errs.CodeDbInternal,
 		Message: "Internal storage error",
 	}
 }
