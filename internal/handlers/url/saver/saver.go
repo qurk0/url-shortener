@@ -88,8 +88,12 @@ func New(log *slog.Logger, urlSaver URLSaver) fiber.Handler {
 					servErr.Message = "Your alias already exists, choose another one"
 				case errs.CodeServInternal:
 					servErr.Message = "Somethings wrong in service. Try again later"
-				default:
-					servErr.Message = "Unknown error. Write to our support for help"
+				case errs.CodeServTemporary:
+					servErr.Message = "Service temporary unavailable. Try again later"
+				case errs.CodeServTimeout:
+					servErr.Message = "The server took too long to respond, try again"
+				case errs.CodeServCancelled:
+					servErr.Message = "Operation cancelled"
 				}
 				log.Error("mapped service error",
 					slog.Any("error", servErr),

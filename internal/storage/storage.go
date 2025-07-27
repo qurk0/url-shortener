@@ -34,7 +34,7 @@ func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
 		var dbErr *errs.DbError
 		if errors.As(err, &dbErr) {
 			switch dbErr.Code {
-			case errs.CodeDbCanceled, errs.CodeDbTimeout:
+			case errs.CodeDbCancelled, errs.CodeDbTimeout:
 				return "", err
 			case errs.CodeDbNotFound:
 				urlToRedirect, err := s.mainDb.GetURL(ctx, alias)

@@ -22,7 +22,7 @@ func errMapping(err error) error {
 	// Отмена операции
 	if errors.Is(err, context.Canceled) {
 		return &errs.DbError{
-			Code:    errs.CodeDbCanceled,
+			Code:    errs.CodeDbCancelled,
 			Message: "operation canceled",
 		}
 	}
