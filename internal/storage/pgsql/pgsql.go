@@ -19,7 +19,7 @@ const (
 	DeleteURLQuery = "DELETE FROM urls WHERE alias = $1"
 )
 
-func New(ctx context.Context, cfg config.DBConfig) (*Storage, error) {
+func New(ctx context.Context, cfg config.PGSQLConfig) (*Storage, error) {
 	const op = "storage.pgsql.New"
 
 	connString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s pool_max_conns=%d pool_max_conn_lifetime=%s pool_max_conn_idle_time=%s",
@@ -54,7 +54,6 @@ func (s *Storage) SaveURL(ctx context.Context, urlToSave, alias string) (int64, 
 	var id int64
 	err := s.pool.QueryRow(ctx, SaveURLQuery, urlToSave, alias).Scan(&id)
 	if err != nil {
-		fmt.Println(err.Error())
 		err = errMapping(err)
 		return -1, fmt.Errorf("%s: %w", op, err)
 	}
@@ -85,7 +84,7 @@ func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
 	}
 
 	if tags.RowsAffected() == 0 {
-		err = errMapping(pgx.ErrNoRows)
+		err = zeroRowsError()
 		return fmt.Errorf("%s: %w", op, err)
 	}
 

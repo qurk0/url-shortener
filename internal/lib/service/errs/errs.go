@@ -9,6 +9,9 @@ const (
 	CodeDbNotFound       DbErrCode = "NOT_FOUND"
 	CodeDbDuplicateAlias DbErrCode = "ALIAS_ALREADY_EXIST"
 	CodeDbInternal       DbErrCode = "INTERNAL"
+	CodeDbCanceled       DbErrCode = "CANCELED"
+	CodeDbTimeout        DbErrCode = "TIMEOUT"
+	CodeDbTemporary      DbErrCode = "TEMPORARY"
 )
 
 type DbError struct {
@@ -29,6 +32,9 @@ const (
 	CodeServBadRequest ServErrCode = "BAD_REQUEST"
 	CodeServInternal   ServErrCode = "INTERNAL"
 	CodeServConflict   ServErrCode = "CONFLICT"
+	CodeServCanceled   ServErrCode = "CANCELED"
+	CodeServTimeout    ServErrCode = "TIMEOUT"
+	CodeServTemporary  ServErrCode = "TEMPORARY"
 	// CodeServUnauthorized ServErrCode = "UNAUTHORIZED" - задел на возможное будущее с миддлваром на аутентификацию
 	// CodeServForbidden    ServErrCode = "FORBIDDEN" - задел на возможное будущее с добавлением прав доступа
 )

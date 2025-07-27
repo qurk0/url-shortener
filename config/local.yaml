@@ -1,5 +1,5 @@
 env: "local"
-"db_config":
+main_db_config:
   host: "localhost"
   port: "5432"
   username: "admin"
@@ -9,6 +9,12 @@ env: "local"
   pool_max_conns: 10
   pool_max_conn_lifetime: "10s"
   pool_max_conn_idletime: "5s"
+
+cache_config:
+  addr: "localhost:6379"
+  password: "admin"
+  db: "0"
+  ttl: "12h"
 
 api_config:
   address: "localhost:8080"

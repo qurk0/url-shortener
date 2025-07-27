@@ -9,12 +9,13 @@ import (
 )
 
 type Config struct {
-	Env    string    `yaml:"env" env-required:"true"`
-	DbCfg  DBConfig  `yaml:"db_config" env-required:"true"`
-	ApiCfg APIConfig `yaml:"api_config" env-required:"true"`
+	Env       string      `yaml:"env" env-required:"true"`
+	ApiCfg    APIConfig   `yaml:"api_config" env-required:"true"`
+	MainDBCfg PGSQLConfig `yaml:"main_db_config" env-required:"true"`
+	CacheCfg  RedisConfig `yaml:"cache_config" env-required:"true"`
 }
 
-type DBConfig struct {
+type PGSQLConfig struct {
 	Host                string        `yaml:"host" env-required:"true"`
 	Port                string        `yaml:"port" env-required:"true"`
 	Username            string        `yaml:"username" env-required:"true"`
@@ -24,6 +25,13 @@ type DBConfig struct {
 	PoolMaxConns        int           `yaml:"pool_max_conns" env-required:"true"`
 	PoolMaxConnLifetime time.Duration `yaml:"pool_max_conn_lifetime" env-required:"true"`
 	PoolMaxConnIdleTime time.Duration `yaml:"pool_max_conn_idletime" env-required:"true"`
+}
+
+type RedisConfig struct {
+	Addr     string        `yaml:"addr" env-required:"true"`
+	Password string        `yaml:"password" env-required:"true"`
+	DB       int           `yaml:"db" env-default:"0"`
+	TTL      time.Duration `yaml:"ttl" env-default:"12h"`
 }
 
 type APIConfig struct {

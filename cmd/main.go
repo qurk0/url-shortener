@@ -12,7 +12,9 @@ import (
 	"taskService/internal/handlers/url/saver"
 	"taskService/internal/lib/log/sl"
 	"taskService/internal/lib/service/middleware"
+	"taskService/internal/storage"
 	"taskService/internal/storage/pgsql"
+	"taskService/internal/storage/redis"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,12 +35,21 @@ func main() {
 	log.Info("Starting task service...", slog.String("env", cfg.Env))
 	log.Debug("Debug messages are enabled")
 
-	// Инициализация стореджей
-	storage, err := pgsql.New(context.Background(), cfg.DbCfg)
+	// Инициализация стореджа
+
+	mainStorage, err := pgsql.New(context.Background(), cfg.MainDBCfg)
 	if err != nil {
-		log.Error("failed to create storage", sl.Err(err))
+		log.Error("failed to create main storage", sl.Err(err))
 		os.Exit(1)
 	}
+
+	cacheStorage, err := redis.New(cfg.CacheCfg)
+	if err != nil {
+		log.Error("failed to create cache storage", sl.Err(err))
+		os.Exit(1)
+	}
+
+	storage := storage.New(mainStorage, cacheStorage, log)
 
 	// TODO: Начало обслуживания адреса
 	app := fiber.New()
