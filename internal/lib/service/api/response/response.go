@@ -60,6 +60,12 @@ func parseErrorToStatus(code errs.ServErrCode) int {
 		return fiber.StatusInternalServerError
 	case errs.CodeServNotFound:
 		return fiber.StatusNotFound
+	case errs.CodeServTemporary:
+		return fiber.StatusInternalServerError
+	case errs.CodeServCancelled:
+		return fiber.StatusBadRequest
+	case errs.CodeServTimeout:
+		return fiber.StatusRequestTimeout
 	// case CodeServUnauthorized:
 	// 	return fiber.StatusUnauthorized
 	// case CodeServForbidden:

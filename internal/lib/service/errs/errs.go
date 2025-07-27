@@ -9,7 +9,7 @@ const (
 	CodeDbNotFound       DbErrCode = "NOT_FOUND"
 	CodeDbDuplicateAlias DbErrCode = "ALIAS_ALREADY_EXIST"
 	CodeDbInternal       DbErrCode = "INTERNAL"
-	CodeDbCanceled       DbErrCode = "CANCELED"
+	CodeDbCancelled      DbErrCode = "CANCELLED"
 	CodeDbTimeout        DbErrCode = "TIMEOUT"
 	CodeDbTemporary      DbErrCode = "TEMPORARY"
 )
@@ -28,13 +28,16 @@ func (e *DbError) Error() string {
 type ServErrCode string
 
 const (
-	CodeServNotFound   ServErrCode = "NOT_FOUND"
+	// Не мапим
 	CodeServBadRequest ServErrCode = "BAD_REQUEST"
-	CodeServInternal   ServErrCode = "INTERNAL"
-	CodeServConflict   ServErrCode = "CONFLICT"
-	CodeServCanceled   ServErrCode = "CANCELED"
-	CodeServTimeout    ServErrCode = "TIMEOUT"
-	CodeServTemporary  ServErrCode = "TEMPORARY"
+
+	// Мапим
+	CodeServNotFound  ServErrCode = "NOT_FOUND"
+	CodeServInternal  ServErrCode = "INTERNAL"
+	CodeServConflict  ServErrCode = "CONFLICT"
+	CodeServCancelled ServErrCode = "CANCELLED"
+	CodeServTimeout   ServErrCode = "TIMEOUT"
+	CodeServTemporary ServErrCode = "TEMPORARY"
 	// CodeServUnauthorized ServErrCode = "UNAUTHORIZED" - задел на возможное будущее с миддлваром на аутентификацию
 	// CodeServForbidden    ServErrCode = "FORBIDDEN" - задел на возможное будущее с добавлением прав доступа
 )
@@ -54,6 +57,9 @@ var mapping map[DbErrCode]ServErrCode = map[DbErrCode]ServErrCode{
 	CodeDbNotFound:       CodeServNotFound,
 	CodeDbDuplicateAlias: CodeServConflict,
 	CodeDbInternal:       CodeServInternal,
+	CodeDbCancelled:      CodeServCancelled,
+	CodeDbTimeout:        CodeServTimeout,
+	CodeDbTemporary:      CodeServTemporary,
 }
 
 func MappingDbToServErrs(code DbErrCode) ServErrCode {

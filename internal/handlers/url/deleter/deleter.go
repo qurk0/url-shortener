@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+//go:generate go run github.com/vektra/mockery/v2@latest --name=URLDeleter --output=./mocks --outpkg=mocks
 type URLDeleter interface {
 	DeleteURL(ctx context.Context, alias string) error
 }
@@ -52,8 +53,12 @@ func New(log *slog.Logger, urlDeleter URLDeleter) fiber.Handler {
 					servErr.Message = "Your alias not found"
 				case errs.CodeServInternal:
 					servErr.Message = "Somethings wrong in service. Try again later"
-				default:
-					servErr.Message = "Unknown error. Write to our support for help"
+				case errs.CodeServTemporary:
+					servErr.Message = "Service temporary unavailable. Try again later"
+				case errs.CodeServTimeout:
+					servErr.Message = "The server took too long to respond, try again"
+				case errs.CodeServCancelled:
+					servErr.Message = "Operation cancelled"
 				}
 				log.Error("mapped service error",
 					slog.Any("error", servErr),
