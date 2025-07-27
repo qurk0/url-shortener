@@ -13,7 +13,7 @@ main_db_config:
 cache_config:
   addr: "localhost:6379"
   password: "admin"
-  db: "0"
+  db: 0
   ttl: "12h"
 
 api_config:

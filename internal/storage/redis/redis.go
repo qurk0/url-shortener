@@ -53,7 +53,6 @@ func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
 		err = errMapping(err)
 		return "", err
 	}
-
 	return val, nil
 }
 
