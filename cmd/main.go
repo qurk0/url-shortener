@@ -2,12 +2,20 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"taskService/internal/config"
+	"taskService/internal/handlers/url/deleter"
+	"taskService/internal/handlers/url/redirecter"
+	"taskService/internal/handlers/url/saver"
 	"taskService/internal/lib/log/sl"
+	"taskService/internal/lib/service/middleware"
 	"taskService/internal/storage/pgsql"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -17,14 +25,15 @@ const (
 )
 
 func main() {
+	// Получение конфигов
 	cfg := config.MustLoad()
 
-	fmt.Println(cfg)
-
+	// Инициализация логгера
 	log := setupLogger(cfg.Env)
 	log.Info("Starting task service...", slog.String("env", cfg.Env))
 	log.Debug("Debug messages are enabled")
 
+	// Инициализация стореджей
 	storage, err := pgsql.New(context.Background(), cfg.DbCfg)
 	if err != nil {
 		log.Error("failed to create storage", sl.Err(err))
@@ -32,8 +41,54 @@ func main() {
 	}
 
 	// TODO: Начало обслуживания адреса
+	app := fiber.New()
 
-	// TODO: Шатдаун
+	app.Post("/url/new",
+		middleware.RequestID(),
+		middleware.Logger(log),
+		middleware.Validator[saver.Request](),
+		saver.New(log, storage),
+	)
+
+	app.Get("/:alias",
+		middleware.RequestID(),
+		middleware.Logger(log),
+		redirecter.New(log, storage),
+	)
+
+	app.Delete("/:alias",
+		middleware.RequestID(),
+		middleware.Logger(log),
+		deleter.New(log, storage),
+	)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		log.Info("Starting listen URL Shortener",
+			slog.String("addr", cfg.ApiCfg.Addr),
+		)
+		if err := app.Listen(cfg.ApiCfg.Addr); err != nil {
+			log.Error("URL Shortener didn't start",
+				slog.Any("error", err),
+			)
+			os.Exit(1)
+		}
+	}()
+
+	<-ctx.Done()
+	log.Info("Shutting down URL Shortener")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	if err := app.ShutdownWithContext(shutdownCtx); err != nil {
+		log.Error("Shutdown failed",
+			slog.Any("error", err),
+		)
+	} else {
+		log.Info("URL Shortener stopped gracefully")
+	}
 }
 
 func setupLogger(env string) *slog.Logger {

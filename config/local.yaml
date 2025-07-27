@@ -4,7 +4,7 @@ env: "local"
   port: "5432"
   username: "admin"
   password: "admin"
-  db_name: "taskService"
+  db_name: "urlShortenerDb"
   ssl_mode: "disable"
   pool_max_conns: 10
   pool_max_conn_lifetime: "10s"

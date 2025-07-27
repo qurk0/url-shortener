@@ -1,5 +1,8 @@
 package errs
 
+// Коды ошибки на уровне репозитория
+// Они рассчитаны, что они будут возвращены из репозитория в сервис и будут использованы для логирования
+// И далее будут преобразованы в ServError с помощью маппинга
 type DbErrCode string
 
 const (
@@ -17,22 +20,36 @@ func (e *DbError) Error() string {
 	return e.Message
 }
 
+// Коды ошибки на уровне сервиса
+// Они рассчитаны, что они полетят к клиенту в теле ответа
 type ServErrCode string
 
 const (
-	CodeServNotFound      ServErrCode = "NOT_FOUND"
-	CodeServBadRequest    ServErrCode = "BAD_REQUEST"
-	CodeServInternal      ServErrCode = "INTERNAL"
-	CodeServAlreadyExists ServErrCode = "ALREADY_EXISTS"
+	CodeServNotFound   ServErrCode = "NOT_FOUND"
+	CodeServBadRequest ServErrCode = "BAD_REQUEST"
+	CodeServInternal   ServErrCode = "INTERNAL"
+	CodeServConflict   ServErrCode = "CONFLICT"
 	// CodeServUnauthorized ServErrCode = "UNAUTHORIZED" - задел на возможное будущее с миддлваром на аутентификацию
 	// CodeServForbidden    ServErrCode = "FORBIDDEN" - задел на возможное будущее с добавлением прав доступа
 )
 
 type ServError struct {
-	Code    ServErrCode
-	Message string
+	Code    ServErrCode `json:"code,omitempty"`
+	Message string      `json:"message,omitempty"`
 }
 
 func (e *ServError) Error() string {
 	return e.Message
+}
+
+// Маппинг ошибок из БД к ошибкам сервиса
+
+var mapping map[DbErrCode]ServErrCode = map[DbErrCode]ServErrCode{
+	CodeDbNotFound:       CodeServNotFound,
+	CodeDbDuplicateAlias: CodeServConflict,
+	CodeDbInternal:       CodeServInternal,
+}
+
+func MappingDbToServErrs(code DbErrCode) ServErrCode {
+	return mapping[code]
 }

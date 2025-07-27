@@ -1,0 +1,128 @@
+package saver
+
+import (
+	"context"
+	"crypto/rand"
+	"errors"
+	"log/slog"
+	"math/big"
+	resp "taskService/internal/lib/service/api/response"
+	"taskService/internal/lib/service/errs"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+type Request struct {
+	URL   string `json:"url" validate:"required,url"`
+	Alias string `json:"alias,omitempty"`
+}
+
+type URLSaver interface {
+	SaveURL(ctx context.Context, url, alias string) (int64, error)
+}
+
+const (
+	randomAliasLength = 10
+
+	lowerCaseSymbols = "abcdefghijklmnopqrstuvwxyz"
+	upperCaseSymbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	numbers          = "0123456789"
+	specialSymbols   = "?!@*"
+
+	alphabet = lowerCaseSymbols + upperCaseSymbols + numbers
+)
+
+func New(log *slog.Logger, urlSaver URLSaver) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		const op = "handlers.url.save"
+
+		reqIDRaw := c.Locals("X-Request-ID")
+		reqID, ok := reqIDRaw.(string)
+		if !ok {
+			reqID = "Unknown"
+			log.Warn("missing or invalid request id", slog.Any("value", reqIDRaw))
+		}
+
+		log = log.With(
+			slog.String("op", op),
+			slog.String("request_id", reqID),
+		)
+
+		reqRaw := c.Locals("validated-body")
+		req, ok := reqRaw.(Request)
+		if !ok {
+			log.Error("invalid validated-body type", slog.Any("value", reqRaw))
+			return resp.ReturnError(c, errs.ServError{
+				Code:    errs.CodeServInternal,
+				Message: "Invalid request body format",
+			})
+		}
+
+		if req.Alias == "" {
+			// Заменяем пустой алиас на сгенерированный
+			newAlias, err := generateAlias()
+			if err != nil {
+				log.Error("alias generation error",
+					slog.Any("error", err))
+				return resp.ReturnError(c, errs.ServError{
+					Code:    errs.CodeServInternal,
+					Message: "Failed to generate new alias",
+				})
+			}
+
+			req.Alias = newAlias
+		}
+
+		id, err := urlSaver.SaveURL(c.Context(), req.URL, req.Alias)
+		if err != nil {
+			log.Error("error from storage", slog.Any("error", err))
+			var dbErr *errs.DbError
+			if errors.As(err, &dbErr) {
+				servErr := errs.ServError{
+					Code: errs.MappingDbToServErrs(dbErr.Code),
+				}
+
+				switch servErr.Code {
+				case errs.CodeServConflict:
+					servErr.Message = "Your alias already exists, choose another one"
+				case errs.CodeServInternal:
+					servErr.Message = "Somethings wrong in service. Try again later"
+				default:
+					servErr.Message = "Unknown error. Write to our support for help"
+				}
+				log.Error("mapped service error",
+					slog.Any("error", servErr),
+					slog.Any("alias", req.Alias),
+				)
+				return resp.ReturnError(c, servErr)
+			}
+
+			log.Error("unmapped error",
+				slog.Any("alias", req.Alias),
+				slog.Any("error", err),
+			)
+
+			return resp.ReturnError(c, errs.ServError{
+				Code:    errs.CodeServInternal,
+				Message: "Unexpected error",
+			})
+		}
+
+		return resp.ReturnCreated(c, fiber.Map{"id": id})
+	}
+}
+
+func generateAlias() (string, error) {
+	alias := make([]byte, randomAliasLength)
+	alphabetLen := big.NewInt(int64(len(alphabet)))
+	for i := range alias {
+		randNum, err := rand.Int(rand.Reader, alphabetLen)
+		if err != nil {
+			return "", err
+		}
+
+		alias[i] = alphabet[randNum.Int64()]
+	}
+
+	return string(alias), nil
+}

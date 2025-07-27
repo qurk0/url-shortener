@@ -14,12 +14,14 @@ type Storage struct {
 }
 
 const (
-	SaveURLQuery   = "INSERT INTO url (url, alias) VALUES ($1, $2) RETURNING id"
-	GetURLQuery    = "SELECT url FROM url WHERE alias = $1"
-	DeleteURLQuery = "DELETE FROM url WHERE alias = $1"
+	SaveURLQuery   = "INSERT INTO urls (url, alias) VALUES ($1, $2) RETURNING id"
+	GetURLQuery    = "SELECT url FROM urls WHERE alias = $1"
+	DeleteURLQuery = "DELETE FROM urls WHERE alias = $1"
 )
 
 func New(ctx context.Context, cfg config.DBConfig) (*Storage, error) {
+	const op = "storage.pgsql.New"
+
 	connString := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s pool_max_conns=%d pool_max_conn_lifetime=%s pool_max_conn_idle_time=%s",
 		cfg.Username,
 		cfg.Password,
@@ -34,13 +36,13 @@ func New(ctx context.Context, cfg config.DBConfig) (*Storage, error) {
 
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse PostgreSQL storage configs: %v", err)
+		return nil, fmt.Errorf("%s: failed to parse PostgreSQL storage configs: %v", op, err)
 	}
 
 	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeCacheDescribe
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create PostgreSQL storage pool: %v", err)
+		return nil, fmt.Errorf("%s: failed to create PostgreSQL storage pool: %v", op, err)
 	}
 
 	return &Storage{pool: pool}, err
@@ -52,8 +54,9 @@ func (s *Storage) SaveURL(ctx context.Context, urlToSave, alias string) (int64, 
 	var id int64
 	err := s.pool.QueryRow(ctx, SaveURLQuery, urlToSave, alias).Scan(&id)
 	if err != nil {
+		fmt.Println(err.Error())
 		err = errMapping(err)
-		return -1, err
+		return -1, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return id, nil
@@ -66,7 +69,7 @@ func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {
 	err := s.pool.QueryRow(ctx, GetURLQuery, alias).Scan(&urlResp)
 	if err != nil {
 		err = errMapping(err)
-		return "", err
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	return urlResp, nil
@@ -78,12 +81,12 @@ func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
 	tags, err := s.pool.Exec(ctx, DeleteURLQuery, alias)
 	if err != nil {
 		err = errMapping(err)
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	if tags.RowsAffected() == 0 {
 		err = errMapping(pgx.ErrNoRows)
-		return err
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	return nil
