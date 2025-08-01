@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	authgrpc "taskService/internal/client/auth/grpc"
 	"taskService/internal/config"
 	"taskService/internal/handlers/url/deleter"
 	"taskService/internal/handlers/url/redirecter"
@@ -34,6 +35,19 @@ func main() {
 	log := setupLogger(cfg.Env)
 	log.Info("Starting task service...", slog.String("env", cfg.Env))
 	log.Debug("Debug messages are enabled")
+
+	authClient, err := authgrpc.New(
+		context.Background(),
+		log,
+		cfg.Clients.Auth.Address,
+		cfg.Clients.Auth.Timeout,
+		cfg.Clients.Auth.RetryCount,
+	)
+
+	if err != nil {
+		log.Error("failed to create auth client", slog.Any("err", err))
+		os.Exit(1)
+	}
 
 	// Инициализация стореджа
 

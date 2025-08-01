@@ -9,10 +9,12 @@ import (
 )
 
 type Config struct {
-	Env       string      `yaml:"env" env-required:"true"`
-	ApiCfg    APIConfig   `yaml:"api_config" env-required:"true"`
-	MainDBCfg PGSQLConfig `yaml:"main_db_config" env-required:"true"`
-	CacheCfg  RedisConfig `yaml:"cache_config" env-required:"true"`
+	Env       string        `yaml:"env" env-required:"true"`
+	ApiCfg    APIConfig     `yaml:"api_config" env-required:"true"`
+	MainDBCfg PGSQLConfig   `yaml:"main_db_config" env-required:"true"`
+	CacheCfg  RedisConfig   `yaml:"cache_config" env-required:"true"`
+	Clients   ClientsConfig `yaml:"clients"`
+	AppSecret string        `yaml:"app_secret" env-required:"true"`
 }
 
 type PGSQLConfig struct {
@@ -38,6 +40,16 @@ type APIConfig struct {
 	Addr        string        `yaml:"address" env-required:"true"`
 	Timeout     time.Duration `yaml:"timeout" env-required:"true"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-required:"true"`
+}
+
+type Client struct {
+	Address    string        `yaml:"address"`
+	Timeout    time.Duration `yaml:"timeout"`
+	RetryCount int           `yaml:"retry_count"`
+}
+
+type ClientsConfig struct {
+	Auth Client `yaml:"auth"`
 }
 
 func MustLoad() *Config {
