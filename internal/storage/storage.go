@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"taskService/internal/lib/service/errs"
-	"taskService/internal/storage/pgsql"
-	"taskService/internal/storage/redis"
 	"time"
+
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
+	"github.com/qurk0/url-shortener/internal/storage/pgsql"
+	"github.com/qurk0/url-shortener/internal/storage/redis"
 )
 
 type Storage struct {

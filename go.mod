@@ -1,4 +1,4 @@
-module taskService
+module github.com/qurk0/url-shortener
 
 go 1.24.4
 

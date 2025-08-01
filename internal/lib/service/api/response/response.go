@@ -1,7 +1,7 @@
 package response
 
 import (
-	"taskService/internal/lib/service/errs"
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
 
 	"github.com/gofiber/fiber/v2"
 )

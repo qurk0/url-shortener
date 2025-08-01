@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	authgrpc "taskService/internal/client/auth/grpc"
-	resp "taskService/internal/lib/service/api/response"
-	"taskService/internal/lib/service/errs"
+
+	authgrpc "github.com/qurk0/url-shortener/internal/client/auth/grpc"
+	resp "github.com/qurk0/url-shortener/internal/lib/service/api/response"
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
 
 	"github.com/gofiber/fiber/v2"
 )
