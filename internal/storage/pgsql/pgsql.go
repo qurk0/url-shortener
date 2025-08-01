@@ -14,9 +14,10 @@ type Storage struct {
 }
 
 const (
-	SaveURLQuery   = "INSERT INTO urls (url, alias) VALUES ($1, $2) RETURNING id"
-	GetURLQuery    = "SELECT url FROM urls WHERE alias = $1"
-	DeleteURLQuery = "DELETE FROM urls WHERE alias = $1"
+	SaveURLQuery          = "INSERT INTO urls (url, alias) VALUES ($1, $2) RETURNING id"
+	GetURLQuery           = "SELECT url FROM urls WHERE alias = $1"
+	ChechUserIsOwnerQuery = "SELECT EXISTS (SELECT 1 FROM urls WHERE alias = $1 AND user_id = $2);"
+	DeleteURLQuery        = "DELETE FROM urls WHERE alias = $1"
 )
 
 func New(ctx context.Context, cfg config.PGSQLConfig) (*Storage, error) {
@@ -89,4 +90,17 @@ func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
 	}
 
 	return nil
+}
+
+func (s *Storage) IsOwner(ctx context.Context, alias string, userID int) (bool, error) {
+	const op = "storage.pgsql.IsOwner"
+
+	var isUserOwner bool
+	err := s.pool.QueryRow(ctx, ChechUserIsOwnerQuery, alias, userID).Scan(&isUserOwner)
+	if err != nil {
+		err = errMapping(err)
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return isUserOwner, nil
 }

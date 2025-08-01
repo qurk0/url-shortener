@@ -91,3 +91,7 @@ func (s *Storage) DeleteURL(ctx context.Context, alias string) error {
 
 	return nil
 }
+
+func (s *Storage) IsOwner(ctx context.Context, alias string, userID int) (bool, error) {
+	return s.mainDb.IsOwner(ctx, alias, userID)
+}

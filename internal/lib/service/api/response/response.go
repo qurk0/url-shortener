@@ -13,12 +13,19 @@ const (
 	StatusCreated     status = "CREATED"
 	StatusRedirecting status = "REDIRECTING"
 	StatusError       status = "ERROR"
+	StatusForbidden   status = "FORBIDDEN"
 )
 
 type Response struct {
 	Status status          `json:"status"`
 	Error  *errs.ServError `json:"error,omitempty"`
 	Data   any             `json:"data,omitempty"`
+}
+
+func ReturnForbidden(ctx *fiber.Ctx) error {
+	return ctx.Status(fiber.StatusForbidden).JSON(Response{
+		Status: StatusForbidden,
+	})
 }
 
 func ReturnError(ctx *fiber.Ctx, err errs.ServError) error {

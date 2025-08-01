@@ -69,6 +69,7 @@ func main() {
 	app := fiber.New()
 
 	app.Post("/url/new",
+		middleware.AuthMiddleware(cfg.AppSecret),
 		middleware.RequestID(),
 		middleware.Logger(log),
 		middleware.Validator[saver.Request](),
@@ -82,9 +83,10 @@ func main() {
 	)
 
 	app.Delete("/:alias",
+		middleware.AuthMiddleware(cfg.AppSecret),
 		middleware.RequestID(),
 		middleware.Logger(log),
-		deleter.New(log, storage),
+		deleter.New(log, storage, authClient),
 	)
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
