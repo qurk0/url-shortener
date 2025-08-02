@@ -1,4 +1,5 @@
 env: "local"
+app_secret: "secret123"
 main_db_config:
   host: "localhost"
   port: "5432"
@@ -20,3 +21,9 @@ api_config:
   address: "localhost:8080"
   timeout: "10s"
   idle_timeout: "60s"
+
+clients:
+  auth:
+    address: "127.0.0.1:44044"
+    timeout: "10s"
+    retry_count: 5

@@ -3,9 +3,11 @@ package redirecter
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
-	resp "taskService/internal/lib/service/api/response"
-	"taskService/internal/lib/service/errs"
+
+	resp "github.com/qurk0/url-shortener/internal/lib/service/api/response"
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,12 +21,17 @@ func New(log *slog.Logger, urlGetter URLGetter) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		const op = "handlers.url.redirect"
 
+		fmt.Println("You are here 1")
+
 		reqIDRaw := c.Locals("X-Request-ID")
 		reqID, ok := reqIDRaw.(string)
 		if !ok {
+			fmt.Println("You are here 2.1 - no ReqID")
 			reqID = "Unknown"
 			log.Warn("missing or invalid request id", slog.Any("value", reqIDRaw))
 		}
+
+		fmt.Println("You are here 2")
 
 		log = log.With(
 			slog.String("op", op),
@@ -38,6 +45,8 @@ func New(log *slog.Logger, urlGetter URLGetter) fiber.Handler {
 				Message: "Empty alias in your URL",
 			})
 		}
+
+		fmt.Println("You are here 3, alias:", alias)
 
 		url, err := urlGetter.GetURL(c.Context(), alias)
 		if err != nil {
@@ -78,6 +87,7 @@ func New(log *slog.Logger, urlGetter URLGetter) fiber.Handler {
 			})
 		}
 
+		fmt.Println("url:", url)
 		return resp.ReturnRedirecting(c, url)
 	}
 }

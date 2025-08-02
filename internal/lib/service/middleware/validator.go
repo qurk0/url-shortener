@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	resp "taskService/internal/lib/service/api/response"
-	"taskService/internal/lib/service/errs"
-	"taskService/internal/lib/service/validator"
+	resp "github.com/qurk0/url-shortener/internal/lib/service/api/response"
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
+	"github.com/qurk0/url-shortener/internal/lib/service/validator"
 
 	"github.com/gofiber/fiber/v2"
 )

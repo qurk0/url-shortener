@@ -3,8 +3,9 @@ package redis
 import (
 	"context"
 	"fmt"
-	"taskService/internal/config"
 	"time"
+
+	"github.com/qurk0/url-shortener/internal/config"
 
 	"github.com/redis/go-redis/v9"
 )

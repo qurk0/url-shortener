@@ -70,8 +70,8 @@ func main() {
 	// TODO: Начало обслуживания адреса
 	app := fiber.New()
 
-	app.Post("/url/new",
-		middleware.AuthMiddleware(cfg.AppSecret),
+	app.Post("/url",
+		middleware.AuthMiddleware([]byte(cfg.AppSecret)),
 		middleware.RequestID(),
 		middleware.Logger(log),
 		middleware.Validator[saver.Request](),
@@ -85,7 +85,7 @@ func main() {
 	)
 
 	app.Delete("/:alias",
-		middleware.AuthMiddleware(cfg.AppSecret),
+		middleware.AuthMiddleware([]byte(cfg.AppSecret)),
 		middleware.RequestID(),
 		middleware.Logger(log),
 		deleter.New(log, storage, authClient),

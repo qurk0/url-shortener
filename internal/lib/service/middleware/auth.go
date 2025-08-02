@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,6 +12,7 @@ func AuthMiddleware(secret []byte) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
+			fmt.Println("no token")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing Authorization header"})
 		}
 
@@ -39,10 +41,11 @@ func AuthMiddleware(secret []byte) func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "user_id claim missing"})
 		}
 
-		userID, ok := userIDRaw.(int)
+		userIDFloat, ok := userIDRaw.(float64)
 		if !ok {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "user_id claim invalid"})
 		}
+		userID := int(userIDFloat)
 		c.Locals("user_id", userID)
 		return c.Next()
 	}

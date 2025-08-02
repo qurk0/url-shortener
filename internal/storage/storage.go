@@ -25,8 +25,8 @@ func New(mainDb *pgsql.Storage, cache *redis.Storage, log *slog.Logger) *Storage
 	}
 }
 
-func (s *Storage) SaveURL(ctx context.Context, url, alias string) (int64, error) {
-	return s.mainDb.SaveURL(ctx, url, alias) // Просто вызываем метод главной БД
+func (s *Storage) SaveURL(ctx context.Context, url, alias string, userID int) (int64, error) {
+	return s.mainDb.SaveURL(ctx, url, alias, userID) // Просто вызываем метод главной БД
 }
 
 func (s *Storage) GetURL(ctx context.Context, alias string) (string, error) {

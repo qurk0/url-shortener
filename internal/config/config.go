@@ -14,7 +14,7 @@ type Config struct {
 	MainDBCfg PGSQLConfig   `yaml:"main_db_config" env-required:"true"`
 	CacheCfg  RedisConfig   `yaml:"cache_config" env-required:"true"`
 	Clients   ClientsConfig `yaml:"clients"`
-	AppSecret []byte        `yaml:"app_secret" env-required:"true"`
+	AppSecret string        `yaml:"app_secret" env-required:"true"`
 }
 
 type PGSQLConfig struct {

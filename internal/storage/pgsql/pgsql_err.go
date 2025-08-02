@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"net"
-	"taskService/internal/lib/service/errs"
+
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"

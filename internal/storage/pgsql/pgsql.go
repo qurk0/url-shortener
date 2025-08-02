@@ -3,7 +3,8 @@ package pgsql
 import (
 	"context"
 	"fmt"
-	"taskService/internal/config"
+
+	"github.com/qurk0/url-shortener/internal/config"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,7 +15,7 @@ type Storage struct {
 }
 
 const (
-	SaveURLQuery          = "INSERT INTO urls (url, alias) VALUES ($1, $2) RETURNING id"
+	SaveURLQuery          = "INSERT INTO urls (url, alias, user_id) VALUES ($1, $2, $3) RETURNING id"
 	GetURLQuery           = "SELECT url FROM urls WHERE alias = $1"
 	ChechUserIsOwnerQuery = "SELECT EXISTS (SELECT 1 FROM urls WHERE alias = $1 AND user_id = $2);"
 	DeleteURLQuery        = "DELETE FROM urls WHERE alias = $1"
@@ -49,11 +50,11 @@ func New(ctx context.Context, cfg config.PGSQLConfig) (*Storage, error) {
 	return &Storage{pool: pool}, err
 }
 
-func (s *Storage) SaveURL(ctx context.Context, urlToSave, alias string) (int64, error) {
+func (s *Storage) SaveURL(ctx context.Context, urlToSave, alias string, userID int) (int64, error) {
 	const op = "storage.pgsql.SaveURL"
 
 	var id int64
-	err := s.pool.QueryRow(ctx, SaveURLQuery, urlToSave, alias).Scan(&id)
+	err := s.pool.QueryRow(ctx, SaveURLQuery, urlToSave, alias, userID).Scan(&id)
 	if err != nil {
 		err = errMapping(err)
 		return -1, fmt.Errorf("%s: %w", op, err)

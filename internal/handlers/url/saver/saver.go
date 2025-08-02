@@ -6,8 +6,9 @@ import (
 	"errors"
 	"log/slog"
 	"math/big"
-	resp "taskService/internal/lib/service/api/response"
-	"taskService/internal/lib/service/errs"
+
+	resp "github.com/qurk0/url-shortener/internal/lib/service/api/response"
+	"github.com/qurk0/url-shortener/internal/lib/service/errs"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,7 +20,7 @@ type Request struct {
 
 //go:generate go run github.com/vektra/mockery/v2@latest --name=URLSaver --output=./mocks --outpkg=mocks
 type URLSaver interface {
-	SaveURL(ctx context.Context, url, alias string) (int64, error)
+	SaveURL(ctx context.Context, url, alias string, userID int) (int64, error)
 }
 
 const (
@@ -49,6 +50,18 @@ func New(log *slog.Logger, urlSaver URLSaver) fiber.Handler {
 			slog.String("request_id", reqID),
 		)
 
+		log.Debug("Starting url-alias creation")
+
+		userIDRaw := c.Locals("user_id")
+		userID, ok := userIDRaw.(int)
+		if !ok {
+			log.Error("invalid user_id in request context", slog.Any("value", userIDRaw))
+			return resp.ReturnError(c, errs.ServError{
+				Code:    errs.CodeServInternal,
+				Message: "Invalid User ID",
+			})
+		}
+
 		reqRaw := c.Locals("validated-body")
 		req, ok := reqRaw.(Request)
 		if !ok {
@@ -74,7 +87,9 @@ func New(log *slog.Logger, urlSaver URLSaver) fiber.Handler {
 			req.Alias = newAlias
 		}
 
-		id, err := urlSaver.SaveURL(c.Context(), req.URL, req.Alias)
+		log.Debug("Starting url-alias creation in db")
+
+		id, err := urlSaver.SaveURL(c.Context(), req.URL, req.Alias, userID)
 		if err != nil {
 			log.Error("error from storage", slog.Any("error", err))
 			var dbErr *errs.DbError
